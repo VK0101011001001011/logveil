@@ -7,26 +7,31 @@ A professional CLI tool to sanitize log files by detecting and replacing sensiti
 
 ## Features
 
-🔒 **Comprehensive Detection** - Identifies and redacts multiple types of sensitive data:
-- IPv4 and IPv6 addresses
-- Email addresses
-- JWT tokens and API keys
-- Cryptographic hashes (SHA256, SHA1, MD5)
-- MAC addresses and UUIDs
-- Credit card numbers and SSNs
-- Phone numbers
-- Bearer tokens
-- High-entropy secrets (e.g., API keys, JWTs, base64 tokens)
+Sanilog is a powerful log sanitization tool designed to identify and redact sensitive information from log files. It supports:
 
-📊 **Detailed Statistics** - Track what was sanitized with optional reporting
+🔒 **Comprehensive Detection**
+- Detects and redacts sensitive data such as IP addresses, email addresses, cryptographic hashes, and high-entropy secrets.
+- Includes support for structured data like JWT tokens, API keys, UUIDs, and credit card numbers.
 
-⚡ **High Performance** - Efficient regex compilation, multi-threaded processing, and entropy-based detection
+📊 **Detailed Statistics**
+- Provides a summary of redactions, including counts for each type of sensitive data.
+- Useful for auditing and understanding the scope of sanitization.
 
-🛡️ **Safe Operations** - Temporary file handling for in-place modifications
+⚡ **High Performance**
+- Optimized for large-scale log processing with multi-threaded execution.
+- Includes entropy-based detection for forensic-grade sanitization.
 
-🗂️ **Multi-File Support** - Process entire folders of log files while preserving subfolder structure
+🛡️ **Safe Operations**
+- Ensures safe handling of files with options for in-place modifications or saving sanitized copies.
+- Temporary files are used to prevent data loss during processing.
 
-📋 **Trace Logging** - Generate structured JSON logs for every redaction, useful for audits and compliance
+🗂️ **Multi-File Support**
+- Processes entire folders of log files, preserving subfolder structure.
+- Automatically skips hidden files and unsupported formats.
+
+📋 **Trace Logging**
+- Generates structured JSON logs for every redaction, including original and redacted values.
+- Ideal for compliance, audits, and debugging.
 
 ## Installation
 
@@ -41,16 +46,18 @@ chmod +x sanilog.py
 
 ## Usage
 
+Sanilog can be used to sanitize individual log files or entire folders. It supports various advanced options for customization.
+
 ### Basic Usage
 
 ```bash
-# Output to stdout
+# Output sanitized content to stdout
 python sanilog.py /path/to/logfile.log
 
-# Save to new file
+# Save sanitized content to a new file
 python sanilog.py /path/to/logfile.log -o /path/to/cleaned.log
 
-# Overwrite original file
+# Overwrite the original file with sanitized content
 python sanilog.py /path/to/logfile.log --inplace
 
 # Show sanitization statistics
@@ -60,22 +67,22 @@ python sanilog.py /path/to/logfile.log --stats
 ### Advanced Options
 
 ```bash
-# Verbose mode with statistics
+# Enable verbose mode with statistics
 python sanilog.py /path/to/logfile.log -v --stats
 
-# Custom encoding
+# Specify file encoding
 python sanilog.py /path/to/logfile.log --encoding iso-8859-1
 
-# Enable entropy-based secret detection
+# Detect high-entropy secrets
 python sanilog.py /path/to/logfile.log --detect-entropy
 
-# Process entire folders
+# Process entire folders of log files
 python sanilog.py --input /path/to/logs --output-dir /path/to/sanitized_logs
 
-# Save trace logs
+# Save trace logs for auditing
 python sanilog.py /path/to/logfile.log --trace-output trace.json
 
-# Help
+# Display help information
 python sanilog.py --help
 ```
 
@@ -101,7 +108,9 @@ Secret key: [REDACTED_SECRET]
 
 ## Supported Patterns
 
-| Type | Pattern | Replacement |
+Sanilog supports a wide range of patterns for detecting sensitive data:
+
+| Type | Example | Replacement |
 |------|---------|-------------|
 | IPv4 | `192.168.1.1` | `[REDACTED_IP]` |
 | IPv6 | `2001:db8::1` | `[REDACTED_IPV6]` |
@@ -121,21 +130,23 @@ Secret key: [REDACTED_SECRET]
 
 ## Command Line Options
 
+Sanilog provides a variety of command-line options for customization:
+
 ```
 usage: sanilog [-h] [-o OUTPUT] [--inplace] [--encoding ENCODING] [-v] [--stats] [--version] input
 
 positional arguments:
-  input                 Path to the input log file to sanitize
+  input                 Path to the input log file or folder to sanitize
 
 options:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -o OUTPUT, --output OUTPUT
                         Path to the output sanitized log file (default: stdout)
   --inplace             Overwrite the input file with sanitized content
   --encoding ENCODING   File encoding (default: utf-8)
   -v, --verbose         Enable verbose output
   --stats               Show sanitization statistics
-  --version             show program's version number and exit
+  --version             Show program's version number and exit
 ```
 
 ## Requirements
@@ -145,11 +156,13 @@ options:
 
 ## Use Cases
 
-- **Bug Reports**: Share logs safely without exposing sensitive infrastructure details
-- **Documentation**: Create sanitized examples for tutorials and documentation
-- **Support Tickets**: Provide logs to support teams without security concerns
-- **Code Reviews**: Include sanitized logs in pull requests
-- **Training**: Use real log patterns without exposing sensitive data
+Sanilog is ideal for:
+
+- **Bug Reports**: Share logs safely without exposing sensitive infrastructure details.
+- **Documentation**: Create sanitized examples for tutorials and documentation.
+- **Support Tickets**: Provide logs to support teams without security concerns.
+- **Code Reviews**: Include sanitized logs in pull requests.
+- **Training**: Use real log patterns without exposing sensitive data.
 
 ## License
 
@@ -163,8 +176,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 While Sanilog helps remove many common types of sensitive data, always review sanitized output before sharing. Consider that:
 
-- Custom application-specific sensitive patterns may not be covered
-- Context around redacted data might still be sensitive
-- False positives/negatives can occur with complex log formats
+- Custom application-specific sensitive patterns may not be covered.
+- Context around redacted data might still be sensitive.
+- False positives/negatives can occur with complex log formats.
 
 For highly sensitive environments, consider additional manual review.
