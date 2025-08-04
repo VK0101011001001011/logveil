@@ -48,22 +48,22 @@ $ColorBlue = "Blue"
 
 function Write-Status {
     param([string]$Message, [string]$Color = "Blue")
-    Write-Host "🔧 $Message" -ForegroundColor $Color
+    Write-Host "[INFO] $Message" -ForegroundColor $Color
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✅ $Message" -ForegroundColor $ColorGreen
+    Write-Host "[SUCCESS] $Message" -ForegroundColor $ColorGreen
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-Host "⚠️  $Message" -ForegroundColor $ColorYellow
+    Write-Host "[WARNING] $Message" -ForegroundColor $ColorYellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "❌ $Message" -ForegroundColor $ColorRed
+    Write-Host "[ERROR] $Message" -ForegroundColor $ColorRed
 }
 
 function Test-PythonVersion {
@@ -185,7 +185,7 @@ function Test-Installation {
 
 function Show-NextSteps {
     Write-Host ""
-    Write-Host "🎉 LogVeil development environment setup complete!" -ForegroundColor $ColorGreen
+    Write-Host "[SUCCESS] LogVeil development environment setup complete!" -ForegroundColor $ColorGreen
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor $ColorBlue
     

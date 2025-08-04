@@ -81,7 +81,7 @@ if __name__ == "__main__":
     assert "summary" in output_data, "Missing 'summary' in output JSON"
     assert "timestamp" in output_data, "Missing 'timestamp' in output JSON"
 
-    print("Functional test passed!")
+    # Test passes - no need for print statement in production test
 
 if __name__ == "__main__":
     test_logveil_agent()

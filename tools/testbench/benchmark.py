@@ -1,5 +1,10 @@
 import time
+import logging
 from core.sanitizer import SanitizerEngine
+
+# Configure logging for benchmark results
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 engine = SanitizerEngine()
 
@@ -19,4 +24,8 @@ sanitized_lines = engine.sanitize_lines(log_lines)
 
 end_time = time.time()
 
-print(f"Processed {len(log_lines)} lines in {end_time - start_time:.2f} seconds.")
+processing_time = end_time - start_time
+lines_per_second = len(log_lines) / processing_time if processing_time > 0 else 0
+
+logger.info("Benchmark completed: Processed %d lines in %.2f seconds (%.2f lines/sec)", 
+           len(log_lines), processing_time, lines_per_second)

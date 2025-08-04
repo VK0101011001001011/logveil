@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, List, Any, Union, Optional, Tuple
 from pathlib import Path
 import re
+import logging
 from dataclasses import dataclass
 
 from core.redactor import RedactionEngine, RedactionTrace, RedactionReason
@@ -355,6 +356,16 @@ if __name__ == "__main__":
     # Process data
     redacted_data, traces = processor.process_json(test_data)
     
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+    
+    logger.info("Structured data processing demo completed")
+    logger.info("Original data size: %d bytes", len(json.dumps(test_data)))
+    logger.info("Redacted data size: %d bytes", len(json.dumps(redacted_data)))
+    logger.info("Total redaction traces: %d", len(traces))
+    
+    # Print results for demo purposes (structured logging in production)
+    print("=== LogVeil Structured Data Demo ===")
     print("Original data:")
     print(json.dumps(test_data, indent=2))
     print("\nRedacted data:")

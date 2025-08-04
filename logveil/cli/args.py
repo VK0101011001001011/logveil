@@ -5,7 +5,10 @@ Enhanced argument parsing for the modular LogVeil system.
 """
 
 import argparse
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args():
@@ -286,31 +289,31 @@ def validate_args(args) -> bool:
     if args.input:
         input_path = Path(args.input)
         if not input_path.exists():
-            print(f"Error: Input path '{args.input}' does not exist.")
+            logger.error("Input path '%s' does not exist", args.input)
             return False
     
     # Check custom rules file exists
     if args.rules:
         rules_path = Path(args.rules)
         if not rules_path.exists():
-            print(f"Error: Rules file '{args.rules}' does not exist.")
+            logger.error("Rules file '%s' does not exist", args.rules)
             return False
     
     # Check config file exists
     if args.config:
         config_path = Path(args.config)
         if not config_path.exists():
-            print(f"Error: Config file '{args.config}' does not exist.")
+            logger.error("Config file '%s' does not exist", args.config)
             return False
     
     # Validate entropy threshold
     if args.entropy_threshold < 0 or args.entropy_threshold > 8:
-        print(f"Error: Entropy threshold must be between 0 and 8, got {args.entropy_threshold}")
+        logger.error("Entropy threshold must be between 0 and 8, got %s", args.entropy_threshold)
         return False
     
     # Validate port range
     if args.port < 1 or args.port > 65535:
-        print(f"Error: Port must be between 1 and 65535, got {args.port}")
+        logger.error("Port must be between 1 and 65535, got %s", args.port)
         return False
     
     return True
@@ -330,5 +333,5 @@ if __name__ == "__main__":
     sys.argv = ["logveil"] + test_args
     
     args = parse_args()
-    print(f"Parsed args: {args}")
-    print(f"Valid: {validate_args(args)}")
+    logger.info("Parsed args: %s", args)
+    logger.info("Valid: %s", validate_args(args))

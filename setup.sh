@@ -61,19 +61,19 @@ done
 
 # Utility functions
 log_status() {
-    echo -e "${BLUE}🔧 $1${NC}"
+    echo -e "${BLUE}[INFO] $1${NC}"
 }
 
 log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}[SUCCESS] $1${NC}"
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}[WARNING] $1${NC}"
 }
 
 log_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}[ERROR] $1${NC}"
 }
 
 # Check if command exists
@@ -191,7 +191,7 @@ test_installation() {
 # Show next steps
 show_next_steps() {
     echo ""
-    echo -e "${GREEN}🎉 LogVeil development environment setup complete!${NC}"
+    echo -e "${GREEN}[SUCCESS] LogVeil development environment setup complete!${NC}"
     echo ""
     echo -e "${BLUE}Next steps:${NC}"
     

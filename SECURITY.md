@@ -6,9 +6,9 @@ LogVeil follows semantic versioning. Security updates are provided for the follo
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.0.x   | ✅ Fully supported |
-| 1.x.x   | ⚠️ Critical fixes only |
-| < 1.0   | ❌ No longer supported |
+| 2.0.x   | Fully supported |
+| 1.x.x   | Critical fixes only |
+| < 1.0   | No longer supported |
 
 ## Reporting a Vulnerability
 

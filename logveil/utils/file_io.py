@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 from typing import Generator
+import logging
+
+logger = logging.getLogger(__name__)
 
 def read_file_lines(file_path: str, show_progress: bool = False) -> Generator[str, None, None]:
     """
@@ -16,14 +19,13 @@ def read_file_lines(file_path: str, show_progress: bool = False) -> Generator[st
     file_size = os.path.getsize(file_path)
     with open(file_path, "r", encoding="utf-8") as file:
         if show_progress:
-            # Simple progress simulation without external dependencies
             lines_processed = 0
-            print(f"Reading file: {file_path} ({file_size} bytes)")
+            logger.info("Reading file: %s (%d bytes)", file_path, file_size)
             for line in file:
                 yield line
                 lines_processed += 1
-                if lines_processed % 1000 == 0:
-                    print(f"Processed {lines_processed} lines...")
+                if lines_processed % 10000 == 0:
+                    logger.debug("Processed %d lines", lines_processed)
         else:
             for line in file:
                 yield line

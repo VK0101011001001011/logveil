@@ -239,6 +239,18 @@ class LogSanitizer:
     
     def print_stats(self):
         """Print sanitization statistics."""
+        logger = logging.getLogger(__name__)
+        
+        logger.info("Sanitization Summary:")
+        logger.info("Lines processed: %d", self.stats.lines_processed)
+        logger.info("Total replacements: %d", self.stats.total_replacements)
+        
+        if self.stats.replacements_by_type:
+            logger.info("Replacements by type:")
+            for pattern_type, count in sorted(self.stats.replacements_by_type.items()):
+                logger.info("  %s: %d", pattern_type, count)
+        
+        # Console output for CLI users
         print(f"\nSanitization Summary:")
         print(f"Lines processed: {self.stats.lines_processed}")
         print(f"Total replacements: {self.stats.total_replacements}")
