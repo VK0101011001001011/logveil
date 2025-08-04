@@ -16,12 +16,17 @@ A professional CLI tool to sanitize log files by detecting and replacing sensiti
 - Credit card numbers and SSNs
 - Phone numbers
 - Bearer tokens
+- High-entropy secrets (e.g., API keys, JWTs, base64 tokens)
 
 📊 **Detailed Statistics** - Track what was sanitized with optional reporting
 
-⚡ **High Performance** - Efficient regex compilation and line-by-line processing
+⚡ **High Performance** - Efficient regex compilation, multi-threaded processing, and entropy-based detection
 
 🛡️ **Safe Operations** - Temporary file handling for in-place modifications
+
+🗂️ **Multi-File Support** - Process entire folders of log files while preserving subfolder structure
+
+📋 **Trace Logging** - Generate structured JSON logs for every redaction, useful for audits and compliance
 
 ## Installation
 
@@ -61,6 +66,15 @@ python sanilog.py /path/to/logfile.log -v --stats
 # Custom encoding
 python sanilog.py /path/to/logfile.log --encoding iso-8859-1
 
+# Enable entropy-based secret detection
+python sanilog.py /path/to/logfile.log --detect-entropy
+
+# Process entire folders
+python sanilog.py --input /path/to/logs --output-dir /path/to/sanitized_logs
+
+# Save trace logs
+python sanilog.py /path/to/logfile.log --trace-output trace.json
+
 # Help
 python sanilog.py --help
 ```
@@ -73,6 +87,7 @@ User john.doe@company.com logged in from 192.168.1.100
 API Key: abc123def456ghi789jkl012mno345pqr678
 JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 Transaction hash: a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
+Secret key: abcdefghijklmnopqrstuvwxyz1234567890
 ```
 
 ### After Sanitization
@@ -81,6 +96,7 @@ User [REDACTED_EMAIL] logged in from [REDACTED_IP]
 API Key: [REDACTED_API_KEY]
 JWT: [REDACTED_JWT]
 Transaction hash: [REDACTED_SHA256]
+Secret key: [REDACTED_SECRET]
 ```
 
 ## Supported Patterns
@@ -101,6 +117,7 @@ Transaction hash: [REDACTED_SHA256]
 | SSN | `123-45-6789` | `[REDACTED_SSN]` |
 | Phone | `(555) 123-4567` | `[REDACTED_PHONE]` |
 | Bearer Token | `Bearer abc123...` | `Bearer [REDACTED_TOKEN]` |
+| High-Entropy Secret | `abcdefghijklmnopqrstuvwxyz1234567890` | `[REDACTED_SECRET]` |
 
 ## Command Line Options
 
