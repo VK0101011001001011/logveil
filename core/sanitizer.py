@@ -84,6 +84,8 @@ class SanitizerEngine:
     def __init__(self):
         self.patterns = patterns
         self.stats = {key: 0 for key in self.patterns.keys()}
+        self.enable_entropy_detection = False
+        self.entropy_threshold = 4.2
 
     def calculate_entropy(self, string: str) -> float:
         """
@@ -101,6 +103,24 @@ class SanitizerEngine:
         frequency = {char: string.count(char) / len(string) for char in set(string)}
         entropy = -sum(freq * math.log2(freq) for freq in frequency.values())
         return entropy
+
+    def enable_entropy_detection(self, enable: bool):
+        """
+        Enable or disable entropy-based secret detection.
+
+        Args:
+            enable (bool): True to enable, False to disable.
+        """
+        self.enable_entropy_detection = enable
+
+    def set_entropy_threshold(self, threshold: float):
+        """
+        Set the entropy threshold for secret detection.
+
+        Args:
+            threshold (float): Entropy threshold value.
+        """
+        self.entropy_threshold = threshold
 
     def sanitize_line(self, line: str, detect_entropy: bool = False, trace: bool = False, trace_file: str = None) -> str:
         """
@@ -135,10 +155,20 @@ class SanitizerEngine:
                         "file": trace_file
                     })
 
-        if detect_entropy:
-            for word in sanitized_line.split():
-                if self.calculate_entropy(word) > 4.2:
-                    sanitized_line = sanitized_line.replace(word, "[REDACTED_SECRET]")
+        if detect_entropy or self.enable_entropy_detection:
+            for token in re.findall(r"\S+", sanitized_line):
+                if len(token) >= 12 and self.calculate_entropy(token) >= self.entropy_threshold:
+                    sanitized_line = sanitized_line.replace(token, "[REDACTED_SECRET]")
+                    self.stats["secret"] = self.stats.get("secret", 0) + 1
+
+                    if trace:
+                        trace_logs.append({
+                            "original": token,
+                            "redacted": "[REDACTED_SECRET]",
+                            "pattern": "secret",
+                            "line": line,
+                            "file": trace_file
+                        })
 
         if trace and trace_file:
             with open(trace_file, "a") as trace_out:
