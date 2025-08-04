@@ -1,0 +1,21 @@
+# Example Redaction Policy Language (RPL)
+
+rules:
+  - name: internal_ip
+    match: "\\b192\\.168\\..*\\b"
+    replace: "[REDACTED_LOCAL_IP]"
+    when:
+      if_file: "*.json"
+      if_key: "client_ip"
+
+  - name: jwt_token
+    match: "eyJ[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+"
+    replace: "[REDACTED_JWT]"
+    when:
+      if_line_contains: "Authorization"
+
+  - name: email_address
+    match: "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\\b"
+    replace: "[REDACTED_EMAIL]"
+    when:
+      if_file: "*.log"

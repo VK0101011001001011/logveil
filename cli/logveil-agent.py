@@ -113,6 +113,10 @@ def main():
     parser.add_argument("--profile-dir", type=str, default="profiles", help="Directory containing redaction profiles")
     parser.add_argument("--detect-entropy", action="store_true", help="Enable entropy-based secret detection")
     parser.add_argument("--trace-output", type=str, help="Path to trace log file")
+    parser.add_argument("--policy", type=str, help="Path to the redaction policy file (YAML)")
+    parser.add_argument("--format", choices=["text", "json"], default="text", help="Input format (text or JSON)")
+    parser.add_argument("--plugins-dir", type=str, help="Directory containing custom plugins")
+    parser.add_argument("--html-report", type=str, help="Path to save the HTML diff report")
     args = parser.parse_args()
 
     input_path = args.input
@@ -121,12 +125,48 @@ def main():
     detect_entropy = args.detect_entropy
     trace_output = args.trace_output
     profile_dir = args.profile_dir
+    policy_path = args.policy
+    input_format = args.format
+    plugins_dir = args.plugins_dir
+    html_report_path = args.html_report
 
-    if os.path.isdir(input_path):
-        final_summary = process_folder(input_path, output_dir, detect_entropy, trace_output, profile_dir)
-        print(json.dumps(final_summary, indent=4))
+    engine = SanitizerEngine()
+
+    if plugins_dir:
+        engine.load_plugins(plugins_dir)
+
+    if input_format == "json":
+        with open(input_path, "r", encoding="utf-8") as infile:
+            json_data = json.load(infile)
+
+        schema = {"redact": ["user.email", "user.token", "client.ip"]}  # Example schema
+        redacted_data = engine.redact_json(json_data, schema)
+
+        with open(output_dir, "w", encoding="utf-8") as outfile:
+            json.dump(redacted_data, outfile, indent=4)
+
+        if html_report_path:
+            original_lines = json.dumps(json_data, indent=4).splitlines()
+            sanitized_lines = json.dumps(redacted_data, indent=4).splitlines()
+            from tools.html_diff_viewer import generate_html_diff
+            generate_html_diff(original_lines, sanitized_lines, html_report_path)
     else:
-        use_python_engine(input_path, output_dir, detect_entropy=detect_entropy, trace_output=trace_output, profile_dir=profile_dir)
+        if os.path.isdir(input_path):
+            final_summary = process_folder(input_path, output_dir, detect_entropy, trace_output, profile_dir)
+            print(json.dumps(final_summary, indent=4))
+        else:
+            with open(input_path, "r") as infile:
+                original_lines = infile.readlines()
+
+            sanitized_lines = [engine.apply_plugins(line) for line in original_lines]
+            sanitized_lines = [engine.apply_redaction_policy(line, file_name=input_path) for line in sanitized_lines]
+
+            with open(output_dir, "w") as outfile:
+                outfile.write("\n".join(sanitized_lines))
+
+            if html_report_path:
+                from tools.html_diff_viewer import generate_html_diff
+                generate_html_diff(original_lines, sanitized_lines, html_report_path)
 
 if __name__ == "__main__":
     main()

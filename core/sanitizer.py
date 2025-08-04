@@ -2,6 +2,8 @@ import re
 import json
 import math
 import glob
+import yaml
+import importlib.util
 from typing import Dict, Tuple
 
 # Global dictionary of compiled regex patterns and their labels
@@ -86,6 +88,8 @@ class SanitizerEngine:
         self.stats = {key: 0 for key in self.patterns.keys()}
         self.enable_entropy_detection = False
         self.entropy_threshold = 4.2
+        self.redaction_rules = []
+        self.plugins = []
 
     def calculate_entropy(self, string: str) -> float:
         """
@@ -214,6 +218,57 @@ class SanitizerEngine:
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON file: {e}")
 
+    def load_redaction_policy(self, policy_path: str):
+        """
+        Load redaction rules from a YAML policy file.
+
+        Args:
+            policy_path (str): Path to the YAML policy file.
+
+        Raises:
+            ValueError: If the policy file format is invalid.
+        """
+        try:
+            with open(policy_path, "r", encoding="utf-8") as file:
+                policy_data = yaml.safe_load(file)
+
+            if not isinstance(policy_data, dict) or "rules" not in policy_data:
+                raise ValueError("Invalid policy format")
+
+            self.redaction_rules = policy_data["rules"]
+
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML file: {e}")
+
+    def apply_redaction_policy(self, line: str, file_name: str = None) -> str:
+        """
+        Apply redaction rules from the loaded policy to a single line.
+
+        Args:
+            line (str): The input line to sanitize.
+            file_name (str): Name of the file being processed.
+
+        Returns:
+            str: The sanitized line.
+        """
+        sanitized_line = line
+
+        for rule in self.redaction_rules:
+            match = rule.get("match")
+            replace = rule.get("replace")
+            conditions = rule.get("when", {})
+
+            if "if_file" in conditions and file_name and not file_name.endswith(conditions["if_file"]):
+                continue
+
+            if "if_line_contains" in conditions and conditions["if_line_contains"] not in line:
+                continue
+
+            regex = re.compile(match)
+            sanitized_line = regex.sub(replace, sanitized_line)
+
+        return sanitized_line
+
     def get_stats(self) -> Dict[str, int]:
         """
         Get sanitization statistics.
@@ -258,5 +313,69 @@ class SanitizerEngine:
             sanitized_lines = list(executor.map(sanitize, lines))
 
         return sanitized_lines
+
+    def redact_json(self, json_data: dict, schema: dict) -> dict:
+        """
+        Redact sensitive fields in a JSON object based on a schema.
+
+        Args:
+            json_data (dict): Input JSON object.
+            schema (dict): Redaction schema specifying keys to redact.
+
+        Returns:
+            dict: Redacted JSON object.
+        """
+        def redact(obj, keys):
+            if isinstance(obj, dict):
+                for key in keys:
+                    if key in obj:
+                        obj[key] = "[REDACTED]"
+                for k, v in obj.items():
+                    redact(v, keys)
+            elif isinstance(obj, list):
+                for item in obj:
+                    redact(item, keys)
+
+        keys_to_redact = schema.get("redact", [])
+        redact(json_data, keys_to_redact)
+        return json_data
+
+    def load_plugins(self, plugins_dir: str):
+        """
+        Load custom plugins from a specified directory.
+
+        Args:
+            plugins_dir (str): Path to the plugins directory.
+
+        Raises:
+            ValueError: If a plugin file cannot be loaded.
+        """
+        self.plugins = []
+
+        for plugin_file in glob.glob(f"{plugins_dir}/*.py"):
+            try:
+                spec = importlib.util.spec_from_file_location("plugin", plugin_file)
+                plugin_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(plugin_module)
+
+                if hasattr(plugin_module, "before_redact"):
+                    self.plugins.append(plugin_module.before_redact)
+
+            except Exception as e:
+                raise ValueError(f"Failed to load plugin {plugin_file}: {e}")
+
+    def apply_plugins(self, line: str) -> str:
+        """
+        Apply loaded plugins to a single line.
+
+        Args:
+            line (str): The input line to process.
+
+        Returns:
+            str: The processed line after applying plugins.
+        """
+        for plugin in self.plugins:
+            line = plugin(line)
+        return line
 
 __all__ = ['SanitizerEngine']
