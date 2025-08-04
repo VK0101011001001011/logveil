@@ -1,0 +1,16 @@
+# Test sample log file for sanilog
+
+# Example log entries with sensitive data
+2025-08-04 10:15:30 INFO User john.doe@company.com logged in from 192.168.1.100
+2025-08-04 10:16:45 DEBUG API request with key: abc123def456ghi789jkl012mno345pqr678
+2025-08-04 10:17:12 INFO JWT token received: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+2025-08-04 10:18:33 ERROR Transaction failed with hash: a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
+2025-08-04 10:19:01 INFO Device MAC address: 00:1b:44:11:3a:b7
+2025-08-04 10:19:15 DEBUG UUID generated: 550e8400-e29b-41d4-a716-446655440000
+2025-08-04 10:20:02 WARN IPv6 connection from: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+2025-08-04 10:20:30 INFO Phone number in profile: (555) 123-4567
+2025-08-04 10:21:00 ERROR Credit card validation failed: 4111111111111111
+2025-08-04 10:21:15 INFO SSN verification: 123-45-6789
+2025-08-04 10:22:00 DEBUG Bearer token: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+2025-08-04 10:22:30 INFO MD5 checksum: 5d41402abc4b2a76b9719d911017c592
+2025-08-04 10:23:00 DEBUG SHA1 hash: aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
