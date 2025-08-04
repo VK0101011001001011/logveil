@@ -21,7 +21,7 @@ class TestLogVeilAgent(unittest.TestCase):
     def setUp(self):
         """Set up test environment."""
         self.test_dir = Path(__file__).parent.parent
-        self.input_file = self.test_dir / "sample_log.txt"
+        self.input_file = self.test_dir / "examples" / "sample_log.txt"
         self.output_file = self.test_dir / "test_output.log"
         self.agent_script = self.test_dir / "logveil" / "cli" / "logveil_agent.py"
 
@@ -61,7 +61,8 @@ class TestLogVeilAgent(unittest.TestCase):
             str(self.agent_script), 
             str(self.input_file), 
             "--output", str(self.output_file), 
-            "--profile", "nginx"
+            "--profile", "nginx",
+            "--format", "json"
         ], check=True)
 
         # Validate JSON output
@@ -74,14 +75,9 @@ class TestLogVeilAgent(unittest.TestCase):
         # Check required fields
         self.assertIn("file", output_data, "Missing 'file' in output JSON")
         self.assertIn("sanitized_lines", output_data, "Missing 'sanitized_lines' in output JSON")
+        self.assertIn("summary", output_data, "Missing 'summary' in output JSON")
+        self.assertIn("timestamp", output_data, "Missing 'timestamp' in output JSON")
 
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
-    assert "summary" in output_data, "Missing 'summary' in output JSON"
-    assert "timestamp" in output_data, "Missing 'timestamp' in output JSON"
-
-    # Test passes - no need for print statement in production test
-
-if __name__ == "__main__":
-    test_logveil_agent()

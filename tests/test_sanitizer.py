@@ -31,7 +31,7 @@ class TestSanitizer(unittest.TestCase):
         self.assertEqual(sanitized, "Contact us at [REDACTED_EMAIL]")
     def test_multiple_patterns(self):
         """Test multiple pattern types in single line."""
-        line = "Error from 10.0.0.1: user admin@test.com failed login"
+        line = "Error from 10.0.0.1: user user@example.com failed login"
         sanitized, counts = sanitize_line(line)
         expected = "Error from [REDACTED_IP]: user [REDACTED_EMAIL] failed login"
         self.assertEqual(sanitized, expected)

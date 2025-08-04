@@ -204,7 +204,7 @@ show_next_steps() {
     echo -e "     pytest"
     
     echo -e "${BLUE}  3. Try the CLI:${NC}"
-    echo -e "     python cli/logveil-agent.py sample_log.txt"
+    echo -e "     python -m logveil.cli.logveil_agent examples/sample_log.txt"
     
     echo -e "${BLUE}  4. Start development server:${NC}"
     echo -e "     python -m logveil serve"

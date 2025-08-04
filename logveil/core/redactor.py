@@ -255,7 +255,7 @@ class RedactionEngine:
                         line_traces.append(trace)
         
         # Custom redactors
-        from utils.logging import logger
+        from logveil.utils.logging import logger
         for redactor_func in self.custom_redactors:
             try:
                 redacted_line = redactor_func(redacted_line)

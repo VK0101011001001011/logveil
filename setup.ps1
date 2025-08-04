@@ -198,7 +198,7 @@ function Show-NextSteps {
     Write-Host "     pytest" -ForegroundColor White
     
     Write-Host "  3. Try the CLI:" -ForegroundColor $ColorBlue
-    Write-Host "     python cli/logveil-agent.py sample_log.txt" -ForegroundColor White
+    Write-Host "     python -m logveil.cli.logveil_agent examples/sample_log.txt" -ForegroundColor White
     
     Write-Host "  4. Start development server:" -ForegroundColor $ColorBlue
     Write-Host "     python -m logveil serve" -ForegroundColor White

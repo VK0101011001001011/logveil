@@ -164,9 +164,9 @@ security-scan: ## Run security scans
 # Performance targets
 profile: ## Profile the application
 	@echo "Profiling LogVeil..."
-	$(PYTHON) -m cProfile -o profile.stats cli/logveil-agent.py sample_log.txt
+	$(PYTHON) -m cProfile -o profile.stats -m logveil.cli.logveil_agent examples/sample_log.txt
 	$(PYTHON) -c "import pstats; pstats.Stats('profile.stats').sort_stats('cumulative').print_stats(20)"
 
 memory-profile: ## Memory profiling
 	@echo "Memory profiling..."
-	$(PYTHON) -m memory_profiler cli/logveil-agent.py sample_log.txt
+	$(PYTHON) -m memory_profiler -m logveil.cli.logveil_agent examples/sample_log.txt

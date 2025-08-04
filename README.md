@@ -58,11 +58,13 @@ LogVeil is a cross-language log sanitization toolkit designed for modern DevOps 
 ## Installation
 
 ### From PyPI (Recommended)
+
 ```bash
 pip install logveil
 ```
 
 ### From Source
+
 ```bash
 git clone https://github.com/VK0101011001001011/logveil.git
 cd logveil
@@ -70,6 +72,7 @@ pip install -e .
 ```
 
 ### System Dependencies
+
 ```bash
 # Optional: Rust engine (significant performance improvement)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -127,7 +130,7 @@ engine.apply_profile(nginx_profile)
 
 # Process single line
 redacted_line, traces = engine.redact_line(
-    "2025-08-04 10:30:45 [ERROR] Authentication failed for user@company.com from 192.168.1.100"
+    "2025-08-04 10:30:45 [ERROR] Authentication failed for user@example.com from 192.168.1.100"
 )
 print(redacted_line)
 # Output: "2025-08-04 10:30:45 [ERROR] Authentication failed for [REDACTED_EMAIL] from [REDACTED_IP]"
@@ -304,7 +307,7 @@ profile = profiles.get_profile("application")
 engine.load_profile(profile)
 
 # Sanitize text
-result = engine.redact_line("User admin@company.com logged in from 192.168.1.100")
+result = engine.redact_line("User user@example.com logged in from 192.168.1.100")
 print(result.sanitized_text)  # User [REDACTED_EMAIL] logged in from [REDACTED_IP]
 ```
 
@@ -467,7 +470,7 @@ logveil serve --host 0.0.0.0 --port 8080
 curl -X POST "http://localhost:8080/sanitize/text" \
   -H "Content-Type: application/json" \
   -d '{
-    "text": "User admin@company.com from 192.168.1.1",
+    "text": "User user@example.com from 192.168.1.1",
     "profile": "application",
     "engine": "rust"
   }'

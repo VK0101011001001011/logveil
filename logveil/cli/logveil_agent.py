@@ -7,11 +7,12 @@ Advanced log sanitization with intelligent engine dispatch and modular processin
 import sys
 import time
 import json
+import platform
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.progress import Progress, TextColumn, BarColumn, TimeElapsedColumn
 from rich.panel import Panel
 from rich.text import Text
 
@@ -28,7 +29,17 @@ class LogVeilAgent:
     
     def __init__(self, args):
         self.args = args
-        self.console = Console(color_system=None if args.no_color else "auto")
+        # Configure console for Windows compatibility
+        import platform
+        if platform.system() == "Windows":
+            # Force UTF-8 encoding for Windows and disable fancy spinners
+            self.console = Console(
+                color_system=None if args.no_color else "auto",
+                force_terminal=True,
+                legacy_windows=False
+            )
+        else:
+            self.console = Console(color_system=None if args.no_color else "auto")
         
         # Initialize core components
         self.dispatcher = EngineDispatcher()
@@ -157,7 +168,7 @@ class LogVeilAgent:
         
         # Generate sample data
         test_lines = [
-            "2024-01-15 10:30:45 [INFO] User login: admin@company.com from 192.168.1.100",
+            "2024-01-15 10:30:45 [INFO] User login: user@example.com from 192.168.1.100",
             "2024-01-15 10:31:12 [WARN] Failed authentication attempt from 10.0.0.45",
             "2024-01-15 10:31:20 [INFO] JWT issued: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature",
             "2024-01-15 10:32:01 [DEBUG] Database query: SELECT * FROM users WHERE id=12345",
@@ -167,7 +178,6 @@ class LogVeilAgent:
         start_time = time.time()
         
         with Progress(
-            SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
@@ -287,7 +297,6 @@ class LogVeilAgent:
         stats_summary = {"files_processed": 0, "total_redactions": 0, "errors": 0}
         
         with Progress(
-            SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
@@ -325,7 +334,24 @@ class LogVeilAgent:
                         else:
                             output_path = file_path.with_suffix(f".redacted{file_path.suffix}")
                         
-                        write_file_lines(str(output_path), redacted_lines)
+                        # Write output based on format
+                        if self.args.format == "json":
+                            # JSON format output
+                            output_data = {
+                                "file": str(file_path),
+                                "sanitized_lines": redacted_lines,
+                                "summary": {
+                                    "lines_processed": len(redacted_lines),
+                                    "redactions_made": len(all_traces),
+                                    "profile_used": self.args.profile
+                                },
+                                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                            }
+                            with open(output_path, 'w', encoding='utf-8') as f:
+                                json.dump(output_data, f, indent=2, ensure_ascii=False)
+                        else:
+                            # Text format output (default)
+                            write_file_lines(str(output_path), redacted_lines)
                     
                     # Save traces if requested
                     if self.args.trace and all_traces:

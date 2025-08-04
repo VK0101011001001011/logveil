@@ -361,7 +361,7 @@ python tools/testbench/benchmark.py --input custom_logs/ --size 1GB
 
 ```bash
 # Profile Python code
-python -m cProfile -o profile.stats cli/logveil-agent.py sample.log
+python -m cProfile -o profile.stats -m logveil.cli.logveil_agent examples/sample_log.txt
 python -c "import pstats; pstats.Stats('profile.stats').sort_stats('cumulative').print_stats(20)"
 
 # Profile Rust code
@@ -390,7 +390,7 @@ logveil sanitize app.log
 RUST_LOG=debug cargo run
 
 # Python debugging
-python -m pdb cli/logveil-agent.py app.log
+python -m pdb -m logveil.cli.logveil_agent examples/sample_log.txt
 ```
 
 ### IDE Setup

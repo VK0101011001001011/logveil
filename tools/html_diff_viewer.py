@@ -16,6 +16,6 @@ def generate_html_diff(original_lines, sanitized_lines, output_path):
 
 if __name__ == "__main__":
     # Example usage
-    original = ["User john.doe@company.com logged in from 192.168.1.100"]
+    original = ["User user@example.com logged in from 192.168.1.100"]
     sanitized = ["User [REDACTED_EMAIL] logged in from [REDACTED_IP]"]
     generate_html_diff(original, sanitized, "report.html")

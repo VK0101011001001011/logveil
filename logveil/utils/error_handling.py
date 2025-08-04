@@ -5,7 +5,7 @@ Provides helper functions for consistent error logging.
 
 from typing import Callable
 import traceback
-from utils.logging import logger
+from logveil.utils.logging import logger
 
 def log_exception(func: Callable):
     """
