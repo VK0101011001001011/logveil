@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "file": { "type": "string" },
+    "sanitized_lines": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "ip": { "type": "integer" },
+        "email": { "type": "integer" },
+        "uuid": { "type": "integer" },
+        "sha256": { "type": "integer" },
+        "md5": { "type": "integer" },
+        "jwt": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "required": ["file", "sanitized_lines", "summary", "timestamp"],
+  "additionalProperties": false
+}
