@@ -104,7 +104,7 @@ class SanitizerEngine:
         entropy = -sum(freq * math.log2(freq) for freq in frequency.values())
         return entropy
 
-    def enable_entropy_detection(self, enable: bool):
+    def set_entropy_detection(self, enable: bool):
         """
         Enable or disable entropy-based secret detection.
 
