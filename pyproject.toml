@@ -1,0 +1,154 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "cython"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logveil"
+version = "2.0.0"
+description = "🔥 The Last Log Redactor You'll Ever Need - Production-grade log sanitization with intelligent redaction"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "LogVeil Team", email = "hello@logveil.dev"}
+]
+maintainers = [
+    {name = "LogVeil Team", email = "hello@logveil.dev"}
+]
+keywords = [
+    "log",
+    "sanitization", 
+    "redaction",
+    "privacy",
+    "security",
+    "gdpr",
+    "pii",
+    "data-protection"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "rich>=13.0.0",
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0"
+]
+
+[project.optional-dependencies]
+server = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.20.0",
+    "python-multipart>=0.0.6"
+]
+xml = [
+    "lxml>=4.6.0"
+]
+performance = [
+    "cython>=3.0.0",
+    "numba>=0.58.0"
+]
+wasm = [
+    "wasmtime>=15.0.0"
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0"
+]
+all = [
+    "logveil[server,xml,performance,wasm]"
+]
+
+[project.urls]
+Homepage = "https://github.com/logveil/logveil"
+Documentation = "https://docs.logveil.dev"
+Repository = "https://github.com/logveil/logveil.git"
+Issues = "https://github.com/logveil/logveil/issues"
+Changelog = "https://github.com/logveil/logveil/blob/main/CHANGELOG.md"
+
+[project.scripts]
+logveil = "cli.logveil-agent:main"
+logveil-agent = "cli.logveil-agent:main"
+
+[tool.setuptools.packages.find]
+include = ["cli*", "core*", "serve*", "utils*", "types*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["cli", "core", "serve", "utils", "types"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"
+]

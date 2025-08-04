@@ -1,0 +1,37 @@
+{
+  "name": "nginx",
+  "description": "Nginx access and error log redaction",
+  "log_format": "plaintext",
+  "patterns": [
+    {
+      "pattern": "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b",
+      "replacement": "[REDACTED_IP]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "IP addresses"
+    },
+    {
+      "pattern": "\"[^\"]*@[^\"]*\"",
+      "replacement": "\"[REDACTED_EMAIL]\"",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "Email addresses in quotes"
+    },
+    {
+      "pattern": "(password|pwd)=[^\\s&]+",
+      "replacement": "\\1=[REDACTED]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "Password parameters"
+    }
+  ],
+  "key_paths": [],
+  "entropy_config": {
+    "enabled": true,
+    "threshold": 4.5,
+    "min_length": 16
+  },
+  "filename_patterns": ["*.access.log", "*.error.log", "*nginx*.log"],
+  "version": "1.0",
+  "author": "LogVeil"
+}

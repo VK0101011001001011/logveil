@@ -1,0 +1,47 @@
+{
+  "name": "cloudtrail",
+  "description": "AWS CloudTrail log redaction",
+  "log_format": "json",
+  "patterns": [
+    {
+      "pattern": "\\bAKIA[0-9A-Z]{16}\\b",
+      "replacement": "[REDACTED_AWS_ACCESS_KEY]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "AWS access keys"
+    },
+    {
+      "pattern": "\\barn:aws:[^:]+:[^:]+:[0-9]{12}:",
+      "replacement": "arn:aws:service:region:[REDACTED_ACCOUNT]:",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "AWS ARNs with account IDs"
+    }
+  ],
+  "key_paths": [
+    {
+      "key_path": "userIdentity.accessKeyId",
+      "action": "redact"
+    },
+    {
+      "key_path": "responseElements.*.accessKeyId",
+      "action": "redact"
+    },
+    {
+      "key_path": "requestParameters.*.password",
+      "action": "redact"
+    },
+    {
+      "key_path": "sourceIPAddress",
+      "action": "redact"
+    }
+  ],
+  "entropy_config": {
+    "enabled": true,
+    "threshold": 4.0,
+    "min_length": 20
+  },
+  "filename_patterns": ["*cloudtrail*.json", "*cloudtrail*.log"],
+  "version": "1.0",
+  "author": "LogVeil"
+}

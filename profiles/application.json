@@ -1,0 +1,37 @@
+{
+  "name": "application",
+  "description": "General application log redaction",
+  "log_format": "plaintext",
+  "patterns": [
+    {
+      "pattern": "(session[_-]?id|sessionid)[\\s=:]+[^\\s,}]+",
+      "replacement": "\\1=[REDACTED_SESSION]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "Session IDs"
+    },
+    {
+      "pattern": "(csrf[_-]?token|authenticity[_-]?token)[\\s=:]+[^\\s,}]+",
+      "replacement": "\\1=[REDACTED_TOKEN]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "CSRF tokens"
+    },
+    {
+      "pattern": "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\\b",
+      "replacement": "[REDACTED_EMAIL]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "Email addresses"
+    }
+  ],
+  "key_paths": [],
+  "entropy_config": {
+    "enabled": true,
+    "threshold": 4.2,
+    "min_length": 12
+  },
+  "filename_patterns": ["*.application.log", "production.log", "*.rails.log"],
+  "version": "1.0",
+  "author": "LogVeil"
+}

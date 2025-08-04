@@ -1,7 +1,39 @@
-from .redactor import sanitize_line
-from .entropy import calculate_entropy
-from .statistics import Statistics
-from .trace_log import write_trace_log
-from .profile_loader import load_custom_patterns, load_redaction_policy
+"""
+LogVeil Core Module
+Core components for log sanitization and redaction.
+"""
 
-__all__ = ['sanitize_line', 'calculate_entropy', 'Statistics', 'write_trace_log', 'load_custom_patterns', 'load_redaction_policy']
+from .redactor import (
+    RedactionEngine, 
+    PatternRegistry, 
+    EntropyDetector, 
+    RedactionTrace, 
+    RedactionStats, 
+    RedactionReason,
+    sanitize_line  # Legacy compatibility
+)
+
+# Optional imports (may not be available without dependencies)
+try:
+    from .profiles import ProfileManager, RedactionProfile
+except ImportError:
+    ProfileManager = None
+    RedactionProfile = None
+
+try:
+    from .structured import StructuredDataProcessor
+except ImportError:
+    StructuredDataProcessor = None
+
+__all__ = [
+    'RedactionEngine',
+    'PatternRegistry', 
+    'EntropyDetector',
+    'RedactionTrace',
+    'RedactionStats',
+    'RedactionReason',
+    'sanitize_line',
+    'ProfileManager',
+    'RedactionProfile',
+    'StructuredDataProcessor'
+]

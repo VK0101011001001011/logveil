@@ -1,0 +1,47 @@
+{
+  "name": "docker",
+  "description": "Docker container log redaction",
+  "log_format": "json",
+  "patterns": [
+    {
+      "pattern": "\\b[A-Za-z0-9+/]{40,}={0,2}\\b",
+      "replacement": "[REDACTED_TOKEN]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "Base64 tokens"
+    },
+    {
+      "pattern": "(api[_-]?key|token|secret)[\\s=:]+[^\\s,}]+",
+      "replacement": "\\1=[REDACTED]",
+      "confidence": 1.0,
+      "enabled": true,
+      "description": "API keys and secrets"
+    }
+  ],
+  "key_paths": [
+    {
+      "key_path": "env.*.password",
+      "action": "redact"
+    },
+    {
+      "key_path": "env.*.secret",
+      "action": "redact"
+    },
+    {
+      "key_path": "config.database.password",
+      "action": "redact"
+    },
+    {
+      "key_path": "labels.*.token",
+      "action": "redact"
+    }
+  ],
+  "entropy_config": {
+    "enabled": true,
+    "threshold": 4.2,
+    "min_length": 12
+  },
+  "filename_patterns": ["*docker*.log", "container-*.log"],
+  "version": "1.0",
+  "author": "LogVeil"
+}
