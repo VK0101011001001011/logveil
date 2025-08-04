@@ -20,12 +20,13 @@ def call_rust(input_file, output_file):
 def call_go(input_file, output_file):
     subprocess.run(["/path/to/go_binary", input_file, output_file], check=True)
 
-def use_python_engine(input_file, output_file):
+def use_python_engine(input_file, output_file, detect_entropy=False, trace_output=None, profile_dir="profiles"):
     engine = SanitizerEngine()
+    engine.load_profiles(profile_dir)
     with open(input_file, "r") as infile:
         lines = infile.readlines()
 
-    sanitized_lines = engine.sanitize_lines(lines)
+    sanitized_lines = [engine.sanitize_line(line, detect_entropy=detect_entropy, trace=bool(trace_output), trace_file=trace_output) for line in lines]
     summary = engine.get_stats()
 
     output = {
@@ -57,31 +58,75 @@ def load_config():
     config.read(".logveilrc")
     return config
 
+def process_folder(input_folder, output_folder, detect_entropy, trace_output, profile_dir):
+    engine = SanitizerEngine()
+    engine.load_profiles(profile_dir)
+
+    summary = {key: 0 for key in engine.stats.keys()}
+    files_processed = 0
+
+    for root, _, files in os.walk(input_folder):
+        for file in files:
+            if file.startswith(".") or not file.endswith((".log", ".txt", ".json")):
+                continue
+
+            input_path = os.path.join(root, file)
+            relative_path = os.path.relpath(root, input_folder)
+            output_subfolder = os.path.join(output_folder, relative_path)
+            os.makedirs(output_subfolder, exist_ok=True)
+
+            output_path = os.path.join(output_subfolder, f"{file}.redacted.log")
+
+            try:
+                with open(input_path, "r") as infile:
+                    lines = infile.readlines()
+
+                sanitized_lines = [engine.sanitize_line(line, detect_entropy=detect_entropy, trace=bool(trace_output), trace_file=trace_output) for line in lines]
+                file_summary = engine.get_stats()
+
+                for key, value in file_summary.items():
+                    summary[key] += value
+
+                with open(output_path, "w") as outfile:
+                    outfile.write("\n".join(sanitized_lines))
+
+                files_processed += 1
+
+            except Exception as e:
+                print(f"Error processing {input_path}: {e}")
+
+    final_summary = {
+        "files_processed": files_processed,
+        "total_redactions": summary
+    }
+
+    return final_summary
+
 # Main CLI logic
 def main():
     config = load_config()
 
     parser = argparse.ArgumentParser(description="Log sanitization tool")
-    parser.add_argument("input_file", help="Path to the input log file")
-    parser.add_argument("output_file", help="Path to the output sanitized file")
+    parser.add_argument("--input", help="Path to the input file or folder")
+    parser.add_argument("--output-dir", type=str, help="Directory to save sanitized files")
     parser.add_argument("--profile", choices=["apache", "json", "auto"], default=config.get("DEFAULT", "profile", fallback="auto"), help="Log profile to apply")
+    parser.add_argument("--profile-dir", type=str, default="profiles", help="Directory containing redaction profiles")
+    parser.add_argument("--detect-entropy", action="store_true", help="Enable entropy-based secret detection")
+    parser.add_argument("--trace-output", type=str, help="Path to trace log file")
     args = parser.parse_args()
 
-    input_file = args.input_file
-    output_file = args.output_file
+    input_path = args.input
+    output_dir = args.output_dir
     profile = args.profile
+    detect_entropy = args.detect_entropy
+    trace_output = args.trace_output
+    profile_dir = args.profile_dir
 
-    with open(input_file, "r") as infile:
-        lines = infile.readlines()
-
-    lines = apply_profile(profile, lines)
-
-    if rust_backend_available():
-        call_rust(input_file, output_file)
-    elif go_binary_available():
-        call_go(input_file, output_file)
+    if os.path.isdir(input_path):
+        final_summary = process_folder(input_path, output_dir, detect_entropy, trace_output, profile_dir)
+        print(json.dumps(final_summary, indent=4))
     else:
-        use_python_engine(input_file, output_file)
+        use_python_engine(input_path, output_dir, detect_entropy=detect_entropy, trace_output=trace_output, profile_dir=profile_dir)
 
 if __name__ == "__main__":
     main()

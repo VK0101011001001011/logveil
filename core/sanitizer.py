@@ -1,5 +1,7 @@
 import re
 import json
+import math
+import glob
 from typing import Dict, Tuple
 
 # Global dictionary of compiled regex patterns and their labels
@@ -83,22 +85,64 @@ class SanitizerEngine:
         self.patterns = patterns
         self.stats = {key: 0 for key in self.patterns.keys()}
 
-    def sanitize_line(self, line: str) -> str:
+    def calculate_entropy(self, string: str) -> float:
+        """
+        Calculate Shannon entropy of a string.
+
+        Args:
+            string (str): Input string.
+
+        Returns:
+            float: Shannon entropy.
+        """
+        if not string:
+            return 0
+
+        frequency = {char: string.count(char) / len(string) for char in set(string)}
+        entropy = -sum(freq * math.log2(freq) for freq in frequency.values())
+        return entropy
+
+    def sanitize_line(self, line: str, detect_entropy: bool = False, trace: bool = False, trace_file: str = None) -> str:
         """
         Sanitize a single line by replacing sensitive data with placeholders.
 
         Args:
             line (str): The input line to sanitize.
+            detect_entropy (bool): Enable entropy-based secret detection.
+            trace (bool): Enable trace logging.
+            trace_file (str): Path to trace log file.
 
         Returns:
             str: The sanitized line.
         """
         sanitized_line = line
+        trace_logs = []
 
         for label, regex in self.patterns.items():
             matches = regex.findall(sanitized_line)
             self.stats[label] += len(matches)
-            sanitized_line = regex.sub(f"[REDACTED_{label.upper()}]", sanitized_line)
+
+            for match in matches:
+                redacted = f"[REDACTED_{label.upper()}]"
+                sanitized_line = sanitized_line.replace(match, redacted)
+
+                if trace:
+                    trace_logs.append({
+                        "original": match,
+                        "redacted": redacted,
+                        "pattern": label,
+                        "line": line,
+                        "file": trace_file
+                    })
+
+        if detect_entropy:
+            for word in sanitized_line.split():
+                if self.calculate_entropy(word) > 4.2:
+                    sanitized_line = sanitized_line.replace(word, "[REDACTED_SECRET]")
+
+        if trace and trace_file:
+            with open(trace_file, "a") as trace_out:
+                json.dump(trace_logs, trace_out, indent=4)
 
         return sanitized_line
 
@@ -115,6 +159,31 @@ class SanitizerEngine:
         custom_patterns = load_custom_patterns(custom_path)
         self.patterns = merge_patterns(self.patterns, custom_patterns)
 
+    def load_profiles(self, profiles_dir: str):
+        """
+        Load redaction rules from JSON profiles in a directory.
+
+        Args:
+            profiles_dir (str): Path to the profiles directory.
+
+        Raises:
+            ValueError: If a profile file format is invalid.
+        """
+        profile_files = glob.glob(f"{profiles_dir}/*.json")
+        for profile_file in profile_files:
+            try:
+                with open(profile_file, "r", encoding="utf-8") as file:
+                    profile_data = json.load(file)
+
+                if not isinstance(profile_data, dict) or "patterns" not in profile_data:
+                    raise ValueError(f"Invalid profile format in {profile_file}")
+
+                custom_patterns = {name: re.compile(pattern) for name, pattern in profile_data["patterns"].items()}
+                self.patterns = merge_patterns(self.patterns, custom_patterns)
+
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON file: {e}")
+
     def get_stats(self) -> Dict[str, int]:
         """
         Get sanitization statistics.
@@ -123,6 +192,22 @@ class SanitizerEngine:
             Dict[str, int]: A dictionary of match counts by pattern.
         """
         return self.stats
+
+    def reset_stats(self):
+        """
+        Reset statistics for a new file or batch.
+        """
+        self.stats = {key: 0 for key in self.patterns.keys()}
+
+    def aggregate_stats(self, batch_stats: Dict[str, int]):
+        """
+        Aggregate statistics from multiple files.
+
+        Args:
+            batch_stats (Dict[str, int]): Statistics from a single file.
+        """
+        for key, value in batch_stats.items():
+            self.stats[key] += value
 
     def sanitize_lines(self, lines: list) -> list:
         """
