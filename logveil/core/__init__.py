@@ -9,8 +9,7 @@ from .redactor import (
     EntropyDetector, 
     RedactionTrace, 
     RedactionStats, 
-    RedactionReason,
-    sanitize_line  # Legacy compatibility
+    RedactionReason
 )
 
 # Optional imports (may not be available without dependencies)

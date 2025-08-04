@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import Generator
-from tqdm import tqdm
 
 def read_file_lines(file_path: str, show_progress: bool = False) -> Generator[str, None, None]:
     """
@@ -17,10 +16,14 @@ def read_file_lines(file_path: str, show_progress: bool = False) -> Generator[st
     file_size = os.path.getsize(file_path)
     with open(file_path, "r", encoding="utf-8") as file:
         if show_progress:
-            with tqdm(total=file_size, unit="B", unit_scale=True, desc="Reading file") as pbar:
-                for line in file:
-                    yield line
-                    pbar.update(len(line))
+            # Simple progress simulation without external dependencies
+            lines_processed = 0
+            print(f"Reading file: {file_path} ({file_size} bytes)")
+            for line in file:
+                yield line
+                lines_processed += 1
+                if lines_processed % 1000 == 0:
+                    print(f"Processed {lines_processed} lines...")
         else:
             for line in file:
                 yield line

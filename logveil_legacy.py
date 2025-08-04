@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Sanilog: Log Sanitizer and Anonymizer
+LogVeil Legacy: Log Sanitizer and Anonymizer
 
 A professional CLI tool to sanitize log files by detecting and replacing 
 sensitive data for safe sharing in bug reports and documentation.
 
-Author: VK0101011001001011
+Author: LogVeil Team
 License: MIT
 """
 
@@ -263,8 +263,8 @@ def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description='Sanitize log files by replacing sensitive data with placeholders',
-        prog='sanilog',
-        epilog='For bug reports and documentation: https://github.com/VK0101011001001011/sanilog'
+        prog='logveil-legacy',
+        epilog='For bug reports and documentation: https://github.com/logveil/logveil'
     )
     
     parser.add_argument(

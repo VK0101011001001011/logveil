@@ -1,4 +1,4 @@
-# Test sample log file for sanilog
+# Test sample log file for LogVeil
 
 # Example log entries with sensitive data
 2025-08-04 10:15:30 INFO User john.doe@company.com logged in from 192.168.1.100

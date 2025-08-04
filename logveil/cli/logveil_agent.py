@@ -16,11 +16,11 @@ from rich.panel import Panel
 from rich.text import Text
 
 # LogVeil core imports
-from core.redactor import RedactionEngine
-from core.profiles import ProfileManager
-from cli.dispatcher import EngineDispatcher, EngineType
-from cli.args import parse_args, validate_args
-from utils.file_io import read_file_lines, write_file_lines
+from logveil.core.redactor import RedactionEngine
+from logveil.core.profiles import ProfileManager
+from logveil.cli.dispatcher import EngineDispatcher, EngineType
+from logveil.cli.args import parse_args, validate_args
+from logveil.utils.file_io import read_file_lines, write_file_lines
 
 
 class LogVeilAgent:
@@ -73,7 +73,7 @@ class LogVeilAgent:
             self.redaction_engine.configure(profile.entropy_config)
         
         if not self.args.quiet:
-            self.console.print(f"[green]✓[/green] Loaded profile: {profile.name}")
+            self.console.print(f"[green]LOADED[/green] Profile: {profile.name}")
     
     def run(self) -> int:
         """Main execution entry point."""
@@ -106,7 +106,7 @@ class LogVeilAgent:
     
     def _list_profiles(self) -> int:
         """List all available redaction profiles."""
-        table = Table(title="🔧 Available Redaction Profiles")
+        table = Table(title="Available Redaction Profiles")
         table.add_column("Name", style="cyan")
         table.add_column("Description", style="dim")
         table.add_column("Format", style="green")
@@ -128,7 +128,7 @@ class LogVeilAgent:
     
     def _list_engines(self) -> int:
         """List all available execution engines."""
-        table = Table(title="🚀 Available Execution Engines")
+        table = Table(title="Available Execution Engines")
         table.add_column("Engine", style="cyan")
         table.add_column("Status", style="green")
         table.add_column("Version", style="dim")
@@ -138,7 +138,7 @@ class LogVeilAgent:
         status_info = self.dispatcher.get_engine_status()
         
         for engine_name, info in status_info.items():
-            status = "✅ Available" if info["available"] else "❌ Not Available"
+            status = "Available" if info["available"] else "Not Available"
             version = info["version"] or "Unknown"
             score = str(info["performance_score"])
             path = info["binary_path"] or info["ffi_library"] or "Built-in"
@@ -148,12 +148,12 @@ class LogVeilAgent:
         # Show optimal selection
         optimal = self.dispatcher.select_optimal_engine()
         self.console.print(table)
-        self.console.print(f"\n[bold green]Optimal Engine:[/bold green] {optimal.engine_type.value.upper()}")
+        self.console.print(f"\nOptimal Engine: {optimal.engine_type.value.upper()}")
         return 0
     
     def _run_benchmark(self) -> int:
         """Run performance benchmark."""
-        self.console.print("🏃 Running LogVeil Performance Benchmark...")
+        self.console.print("Running LogVeil Performance Benchmark...")
         
         # Generate sample data
         test_lines = [
@@ -187,7 +187,7 @@ class LogVeilAgent:
         lines_per_second = len(test_lines) / duration
         
         # Display results
-        results_table = Table(title="📊 Benchmark Results")
+        results_table = Table(title="Benchmark Results")
         results_table.add_column("Metric", style="cyan")
         results_table.add_column("Value", style="green")
         
@@ -206,8 +206,8 @@ class LogVeilAgent:
             from serve.api import create_app
             import uvicorn
             
-            self.console.print(f"🌐 Starting LogVeil API server on {self.args.host}:{self.args.port}")
-            self.console.print(f"📚 API docs will be available at http://{self.args.host}:{self.args.port}/docs")
+            self.console.print(f"Starting LogVeil API server on {self.args.host}:{self.args.port}")
+            self.console.print(f"API docs will be available at http://{self.args.host}:{self.args.port}/docs")
             
             app = create_app(self.redaction_engine, self.profile_manager)
             uvicorn.run(app, host=self.args.host, port=self.args.port)
@@ -272,7 +272,7 @@ class LogVeilAgent:
                         str(i),
                         line.strip()[:80] + ("..." if len(line.strip()) > 80 else ""),
                         redacted_line.strip()[:80] + ("..." if len(redacted_line.strip()) > 80 else ""),
-                        str(changes) if changes > 0 else "—"
+                        str(changes) if changes > 0 else "-"
                     )
                 
                 self.console.print(table)
@@ -367,7 +367,7 @@ class LogVeilAgent:
         
         panel = Panel(
             panel_content.strip(),
-            title="📊 Processing Summary",
+            title="Processing Summary",
             border_style="green"
         )
         self.console.print(panel)
@@ -405,71 +405,5 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
-    output = {
-        "file": input_file,
-        "sanitized_lines": sanitized_lines,
-        "summary": summary,
-        "timestamp": datetime.now().isoformat()
-    }
-
-    with open(output_file, "w") as outfile:
-        json.dump(output, outfile, indent=4)
-
-# Define log profiles
-def apply_profile(profile, lines):
-    if profile == "apache":
-        # Apply Apache log sanitization rules
-        pass
-    elif profile == "json":
-        # Apply JSON log sanitization rules
-        pass
-    elif profile == "auto":
-        # Use heuristics to guess log type
-        pass
-    return lines
-
-# Load configuration from .logveilrc
-def load_config():
-    config = configparser.ConfigParser()
-    config.read(".logveilrc")
-    return config
-
-def process_folder(input_folder, output_folder, detect_entropy, trace_output, profile_dir):
-    engine = SanitizerEngine()
-    engine.load_profiles(profile_dir)
-
-    summary = {key: 0 for key in engine.stats.keys()}
-    files_processed = 0
-
-    for root, _, files in os.walk(input_folder):
-        for file in files:
-            if file.startswith(".") or not file.endswith((".log", ".txt", ".json")):
-                continue
-
-            input_path = os.path.join(root, file)
-            relative_path = os.path.relpath(root, input_folder)
-            output_subfolder = os.path.join(output_folder, relative_path)
-            os.makedirs(output_subfolder, exist_ok=True)
-
-            output_path = os.path.join(output_subfolder, f"{file}.redacted.log")
-
-            try:
-                with open(input_path, "r") as infile:
-                    lines = infile.readlines()
-
-                sanitized_lines = [engine.sanitize_line(line, detect_entropy=detect_entropy, trace=bool(trace_output), trace_file=trace_output) for line in lines]
-                file_summary = engine.get_stats()
-
-                for key, value in file_summary.items():
-                    summary[key] += value
-
-                with open(output_path, "w") as outfile:
-                    outfile.write("\n".join(sanitized_lines))
-
-                files_processed += 1
-
-            except Exception as e:
-                print(f"Error processing {input_path}: {e}")
 
 

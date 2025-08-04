@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "logveil"
 version = "2.0.0"
-description = "🔥 The Last Log Redactor You'll Ever Need - Production-grade log sanitization with intelligent redaction"
+description = "Production-grade log sanitization engine with intelligent pattern detection and redaction"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -86,11 +86,12 @@ Issues = "https://github.com/logveil/logveil/issues"
 Changelog = "https://github.com/logveil/logveil/blob/main/CHANGELOG.md"
 
 [project.scripts]
-logveil = "cli.logveil-agent:main"
-logveil-agent = "cli.logveil-agent:main"
+logveil = "logveil.cli.logveil_agent:main"
+logveil-agent = "logveil.cli.logveil_agent:main"
+logveil-legacy = "logveil_legacy:main"
 
 [tool.setuptools.packages.find]
-include = ["cli*", "core*", "serve*", "utils*", "types*"]
+include = ["logveil*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.json", "*.yaml", "*.yml"]

@@ -156,8 +156,22 @@ class EngineDispatcher:
     
     def _get_rust_version(self) -> Optional[str]:
         """Get Rust engine version if available."""
-        # This would query the Rust library/binary for version
-        return "1.0.0"  # Placeholder
+        try:
+            # Check if Rust binary exists and get its version
+            import subprocess
+            result = subprocess.run(
+                ["cargo", "--version"], 
+                capture_output=True, 
+                text=True, 
+                timeout=5
+            )
+            if result.returncode == 0:
+                # Extract version from "cargo 1.70.0" format
+                version = result.stdout.strip().split()[1]
+                return version
+        except (subprocess.SubprocessError, FileNotFoundError, IndexError):
+            pass
+        return None
     
     def _get_go_version(self, binary_path: str) -> Optional[str]:
         """Get Go engine version."""
@@ -233,11 +247,11 @@ if __name__ == "__main__":
     # CLI for testing dispatcher
     dispatcher = create_dispatcher()
     
-    print("🔥 LogVeil Engine Dispatcher Status")
+    print("LogVeil Engine Dispatcher Status")
     print("=" * 40)
     
     for engine_type, info in dispatcher.available_engines.items():
-        status = "✅ Available" if info.available else "❌ Not Available"
+        status = "Available" if info.available else "Not Available"
         print(f"{engine_type.value.upper()}: {status}")
         if info.available:
             print(f"  Version: {info.version}")
@@ -250,4 +264,4 @@ if __name__ == "__main__":
     
     # Test optimal selection
     optimal = dispatcher.select_optimal_engine()
-    print(f"🚀 Optimal Engine: {optimal.engine_type.value.upper()}")
+    print(f"Optimal Engine: {optimal.engine_type.value.upper()}")

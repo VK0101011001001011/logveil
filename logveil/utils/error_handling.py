@@ -5,7 +5,7 @@ Provides helper functions for consistent error logging.
 
 from typing import Callable
 import traceback
-from sanilog.utils.logging import logger
+from utils.logging import logger
 
 def log_exception(func: Callable):
     """

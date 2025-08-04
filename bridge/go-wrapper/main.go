@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,72 +10,76 @@ import (
 	"time"
 )
 
+// RedactedLine represents a processed log line
 type RedactedLine struct {
-	Line string `json:"line"`
+	Line      string   `json:"line"`
+	Timestamp string   `json:"timestamp,omitempty"`
+	Errors    []string `json:"errors,omitempty"`
+}
+
+// ProcessResult represents the overall processing result
+type ProcessResult struct {
+	Success        bool     `json:"success"`
+	LinesProcessed int      `json:"lines_processed"`
+	Errors         []string `json:"errors,omitempty"`
+	Duration       string   `json:"duration"`
 }
 
 func main() {
 	if len(os.Args) < 3 {
-		log.Fatalf("Usage: go-wrapper <input_file> <output_file>")
+		log.Fatalf("Usage: %s <input_file> <output_file>", os.Args[0])
 	}
 
 	inputFile := os.Args[1]
 	outputFile := os.Args[2]
 
-	cmd := exec.Command("python3", "../cli/logveil-agent.py", inputFile, outputFile)
+	// Validate input file exists
+	if _, err := os.Stat(inputFile); os.IsNotExist(err) {
+		log.Fatalf("Input file does not exist: %s", inputFile)
+	}
 
-	// Capture stderr
-	stderr, err := cmd.StderrPipe()
+	result, err := processLogFile(inputFile, outputFile)
 	if err != nil {
-		log.Fatalf("Failed to capture stderr: %v", err)
+		log.Fatalf("Processing failed: %v", err)
 	}
 
-	// Set timeout
-	timeout := time.AfterFunc(30*time.Second, func() {
-		cmd.Process.Kill()
-		log.Fatalf("Process timed out")
-	})
-	defer timeout.Stop()
+	// Output result as JSON for structured logging
+	if resultJSON, err := json.Marshal(result); err == nil {
+		fmt.Println(string(resultJSON))
+	}
+}
 
-	// Start the process
-	if err := cmd.Start(); err != nil {
-		log.Fatalf("Failed to start process: %v", err)
+func processLogFile(inputPath, outputPath string) (*ProcessResult, error) {
+	startTime := time.Now()
+
+	// Create context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Prepare command
+	cmd := exec.CommandContext(ctx, "python3", "../cli/logveil_agent.py", inputPath, outputPath)
+
+	// Capture both stdout and stderr
+	output, err := cmd.CombinedOutput()
+
+	result := &ProcessResult{
+		Success:  err == nil,
+		Duration: time.Since(startTime).String(),
 	}
 
-	// Read stderr
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := stderr.Read(buf)
-			if n > 0 {
-				log.Printf("stderr: %s", string(buf[:n]))
-			}
-			if err != nil {
-				break
-			}
+	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			result.Errors = append(result.Errors, "Process timed out after 30 seconds")
+		} else {
+			result.Errors = append(result.Errors, fmt.Sprintf("Process failed: %v", err))
 		}
-	}()
 
-	// Wait for the process to finish
-	if err := cmd.Wait(); err != nil {
-		log.Fatalf("Process failed: %v", err)
+		if len(output) > 0 {
+			result.Errors = append(result.Errors, fmt.Sprintf("Output: %s", string(output)))
+		}
+
+		return result, fmt.Errorf("command failed: %v", err)
 	}
 
-	log.Println("Process completed successfully")
-
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
-
-	var lines []RedactedLine
-	err = json.Unmarshal(out, &lines)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, l := range lines {
-		fmt.Println(l.Line)
-	}
+	return result, nil
 }

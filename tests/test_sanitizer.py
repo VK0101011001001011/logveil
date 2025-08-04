@@ -1,17 +1,54 @@
-import pytest
-from core.sanitizer import sanitize_line
+#!/usr/bin/env python3
+"""
+Real functional tests for LogVeil sanitizer using stdlib unittest.
+Production-grade testing without external dependencies.
+"""
 
-def test_ipv4():
-    line = "User logged in from 192.168.1.1"
-    sanitized, counts = sanitize_line(line)
-    assert sanitized == "User logged in from [REDACTED_IP]"
-    assert counts["ip"] == 1
+import unittest
+import sys
+from pathlib import Path
 
-def test_email():
-    line = "Contact us at support@example.com"
-    sanitized, counts = sanitize_line(line)
-    assert sanitized == "Contact us at [REDACTED_EMAIL]"
-    assert counts["email"] == 1
+# Add parent directory to path to import logveil modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from logveil.core.sanitizer import sanitize_line
+
+
+class TestSanitizer(unittest.TestCase):
+    """Test cases for core sanitization functionality."""
+
+    def test_ipv4_redaction(self):
+        """Test IPv4 address redaction."""
+        line = "User logged in from 192.168.1.1"
+        sanitized, counts = sanitize_line(line)
+        self.assertEqual(sanitized, "User logged in from [REDACTED_IP]")
+        self.assertEqual(counts["ip"], 1)
+
+    def test_email_redaction(self):
+        """Test email address redaction."""
+        line = "Contact us at support@example.com"
+        sanitized, counts = sanitize_line(line)
+        self.assertEqual(sanitized, "Contact us at [REDACTED_EMAIL]")
+    def test_multiple_patterns(self):
+        """Test multiple pattern types in single line."""
+        line = "Error from 10.0.0.1: user admin@test.com failed login"
+        sanitized, counts = sanitize_line(line)
+        expected = "Error from [REDACTED_IP]: user [REDACTED_EMAIL] failed login"
+        self.assertEqual(sanitized, expected)
+        self.assertEqual(counts["ip"], 1)
+        self.assertEqual(counts["email"], 1)
+
+    def test_no_matches(self):
+        """Test line with no sensitive data."""
+        line = "Normal log message with no sensitive content"
+        sanitized, counts = sanitize_line(line)
+        self.assertEqual(sanitized, line)
+        # Sanitizer returns all counters initialized to 0
+        self.assertTrue(all(count == 0 for count in counts.values()))
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
 
 def test_uuid():
     line = "Generated UUID: 550e8400-e29b-41d4-a716-446655440000"
