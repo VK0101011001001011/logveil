@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 import sys
+import re
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -9,8 +12,15 @@ from utils.file_io import read_file_lines, write_file_lines, safe_overwrite
 
 console = Console()
 
-def main():
+if len(sys.argv) == 1:
+    console.print("[bold yellow]Usage:[/bold yellow] logveil-agent --input logs.txt [options]", file=sys.stderr)
+    sys.exit(0)
+
+try:
     args = parse_args()
+
+    if args.no_color:
+        console = Console(color_system=None)
 
     input_path = Path(args.input)
     if not input_path.exists():
@@ -81,6 +91,15 @@ def main():
         console.print("\n[bold]Sanitization Summary:[/bold]")
         for key, count in match_counts.items():
             console.print(f"[green]{key}:[/green] {count}")
-
-if __name__ == "__main__":
-    main()
+except FileNotFoundError:
+    console.print("[red]Error:[/red] File not found.", file=sys.stderr)
+    sys.exit(1)
+except ValueError:
+    console.print("[red]Error:[/red] Invalid rules file.", file=sys.stderr)
+    sys.exit(2)
+except re.error:
+    console.print("[red]Error:[/red] Regex compilation failed.", file=sys.stderr)
+    sys.exit(3)
+except Exception as e:
+    console.print(f"[red]Unexpected error:[/red] {e}", file=sys.stderr)
+    sys.exit(99)

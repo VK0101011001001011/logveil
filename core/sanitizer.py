@@ -123,3 +123,25 @@ class SanitizerEngine:
             Dict[str, int]: A dictionary of match counts by pattern.
         """
         return self.stats
+
+    def sanitize_lines(self, lines: list) -> list:
+        """
+        Sanitize multiple lines concurrently.
+
+        Args:
+            lines (list): List of input lines to sanitize.
+
+        Returns:
+            list: List of sanitized lines.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        def sanitize(line):
+            return self.sanitize_line(line)
+
+        with ThreadPoolExecutor() as executor:
+            sanitized_lines = list(executor.map(sanitize, lines))
+
+        return sanitized_lines
+
+__all__ = ['SanitizerEngine']

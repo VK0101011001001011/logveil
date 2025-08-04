@@ -72,4 +72,10 @@ def parse_args():
         help="Output format: txt (default) or json"
     )
 
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output"
+    )
+
     return parser.parse_args()
